@@ -1,0 +1,42 @@
+name: Build Hector APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout private Hector source
+        uses: actions/checkout@v4
+        with:
+          repository: hoseinalinejad021-sketch/Hector
+          ref: '@Chat-GPT'
+          token: ${{ secrets.HECTOR_SOURCE_TOKEN }}
+          path: source
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Build debug APK
+        working-directory: source
+        run: gradle --no-daemon assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: hector-debug-apk
+          path: source/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 7
